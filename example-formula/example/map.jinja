@@ -1,0 +1,34 @@
+{#
+This file handles the merging of pillar data with the data from defaults
+Start with defaults from defaults.yml
+#}
+{% import_yaml 'example/defaults.yml' as default_settings %}
+
+{#
+Setup variable using grains['os_family'] based logic, only add key:values here
+that differ from whats in defaults.yml
+#}
+{% set os_family_map = salt['grains.filter_by']({
+        'Debian': {},
+        'Suse': {},
+        'Arch': {},
+        'RedHat': {},
+  }
+  , grain="os_family"
+  , merge=salt['pillar.get']('example:lookup'))
+%}
+
+{#
+Merge the flavor_map to the default settings
+#}
+{% do default_settings.example.update(os_family_map) %}
+
+{#
+Merge in template:lookup pillar
+#}
+{% set example = salt['pillar.get'](
+        'example',
+        default=default_settings.example,
+        merge=True
+    )
+%}

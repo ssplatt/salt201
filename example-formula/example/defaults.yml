@@ -1,0 +1,5 @@
+example:
+  enabled: true
+  dep_pkgs:
+    - vim
+    - htop
