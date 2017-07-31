@@ -29,6 +29,9 @@ Building on [Salt 101](https://github.com/ssplatt/salt101/blob/master/README.md)
   * [Add a new suite](#add-a-new-suite)
      * [Create the new suite definition](#create-the-new-suite-definition)
      * [Create tests for the new suite](#create-tests-for-the-new-suite)
+  * [Other Kitchen Configs](#other-kitchen-configs)
+           * [Create a Kitchen CI Config](#create-a-kitchen-ci-config)
+        * [CI Automation](#ci-automation)
 
 ## Prerequisites
 First and foremost, ensure you have the required pieces of software installed to have a proper local testing environment. This class assumes you are familiar with Salt, Yaml, and Jinja. If you need a refresher, please review [Salt 101](https://github.com/ssplatt/salt101/blob/master/README.md).
@@ -894,4 +897,91 @@ end
        Finished verifying <custom-bento-debian-88> (0m8.90s).
 -----> Kitchen is finished. (0m18.71s)
 ```
-# Congratulations! You can now create test driven formulas for Salt!
+
+## Other Kitchen Configs
+Typically, it is quicker to develop locally using things like Vagrant and Virtualbox but the production environment will most likely be slightly different, running in a Cloud or with Docker. It is possible to configure more than one `.kitchen.yml` file to use a different driver to deploy to these other environments.
+
+  - Environment Variables
+    - `KITCHEN_YAML` defaults to `.kitchen.yml`
+    - `KITCHEN_LOCAL_YAML` defaults to `.kitchen.local.yml`
+      - typically added to `.gitignore` so as to not upload local configuration to public repositories
+    - `KITCHEN_GLOBAL_YAML` defaults to `$HOME/.kitchen/config.yml`
+  - The `.kitchen-ci.yml` file
+    - define a new driver and settings for use in the CI system
+    - can use for local testing too
+      - `KITCHEN_YAML=./.kitchen-ci.yml kitchen converge`
+
+### Create a Kitchen CI Config
+In this example, we will use the `kitchen-linode` driver, but [many more drivers are available](https://docs.chef.io/kitchen.html#drivers) (ec2, docker, openstack, digital ocean, etc.).
+
+  1. In the base directory, `example-formula`, copy `.kitchen.yml` to `.kitchen-ci.yml`
+  2. Edit the `.kitchen-ci.yml` file, change the Driver and Platform names
+  
+```
+---
+driver:
+  name: linode
+
+provisioner:
+  name: salt_solo
+  formula: example
+  state_top:
+    base:
+      "*":
+        - example
+
+platforms:
+  - name: debian-8
+
+suites:
+  - name: default
+  
+  - name: custom
+    provisioner:
+      pillars-from-files:
+        example.sls: pillar-custom.sls
+      pillars:
+        top.sls:
+          base:
+            "*":
+              - example
+```
+
+  3. Save and exit the file
+  4. Ensure your `LINODE_API_KEY` environment variable is set
+  5. run `KITCHEN_YAML=./.kitchen-ci.yml kitchen converge`. You should see log lines like:
+
+```
+-----> Creating <default-debian-8>...
+       Creating Linode - kitchen-example-formula-defaul12
+       Got data center: Atlanta, GA, USA...
+       Got flavor: Linode 1024...
+       Got image: Debian 8...
+       Got kernel: Latest 64 bit (4.9.36-x86_64-linode85)...
+       Linode <3466956> created.
+       Waiting for linode to boot...
+```
+
+  6. Log into the Linode Manager to see two new instances listed
+  7. run `KITCHEN_YAML=./.kitchen-ci.yml kitchen destroy` to clean up
+
+So, using this example, the CI server will need the `test-kitchen`, `kitchen-salt`, and `kitchen-linode` gems installed. You'll need to define a Linode API Key to use. Then you'll need to define a command like `KITCHEN_YAML=./.kitchen-ci.yml kitchen test -d always` for the test or build step of the CI run.
+
+  1. Run `KITCHEN_YAML=./.kitchen-ci.yml kitchen test -d always` to fully simulate a CI test
+  2. All configuration should apply successfully and all tests should pass. Kitchen should fully clean up after itself.
+  3. Check the Linode Manager to verify that there are no test instances still running.
+
+## CI Automation
+The exact steps for automating CI steps depends on your specific tooling but the concepts for triggering automation are the same. You can utilize APIs to trigger events in other systems. Very simply, the steps are:
+
+  1. On code commit or PR opening in Github, a webhook is sent to Jenkins
+  2. Jenkins pulls the code and runs the tests
+  3. When the tests pass, a webhook is sent to the Salt Master (running salt-api)
+  4. The Salt Master performs a git pull to get the new code
+  5. A Highstate is performed to deploy the changes to the fleet
+
+If you have all of these steps configured to be automated, you can honestly say that you are practicing [Continuous Deployment](https://en.wikipedia.org/wiki/Continuous_delivery#Relationship_to_continuous_deployment), at least for a small part of your environment. Depending on which of the steps require manual approval, you may only be practicing Continuous Integration or Continuous Delivery.
+
+Configuring version control, a CI server, and Salt API are outside the scope of this class but are presented here to illustrate how kitchen tests fit into the equation.
+
+**Congratulations! You can now create test driven formulas for Salt and Continous Integration!**

@@ -1,0 +1,27 @@
+---
+driver:
+  name: linode
+
+provisioner:
+  name: salt_solo
+  formula: example
+  state_top:
+    base:
+      "*":
+        - example
+
+platforms:
+  - name: debian-8
+
+suites:
+  - name: default
+  
+  - name: custom
+    provisioner:
+      pillars-from-files:
+        example.sls: pillar-custom.sls
+      pillars:
+        top.sls:
+          base:
+            "*":
+              - example
