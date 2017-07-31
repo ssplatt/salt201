@@ -30,8 +30,8 @@ Building on [Salt 101](https://github.com/ssplatt/salt101/blob/master/README.md)
      * [Create the new suite definition](#create-the-new-suite-definition)
      * [Create tests for the new suite](#create-tests-for-the-new-suite)
   * [Other Kitchen Configs](#other-kitchen-configs)
-           * [Create a Kitchen CI Config](#create-a-kitchen-ci-config)
-        * [CI Automation](#ci-automation)
+    * [Create a Kitchen CI Config](#create-a-kitchen-ci-config)
+  * [CI Automation Concepts](#ci-automation-concepts)
 
 ## Prerequisites
 First and foremost, ensure you have the required pieces of software installed to have a proper local testing environment. This class assumes you are familiar with Salt, Yaml, and Jinja. If you need a refresher, please review [Salt 101](https://github.com/ssplatt/salt101/blob/master/README.md).
@@ -971,7 +971,7 @@ So, using this example, the CI server will need the `test-kitchen`, `kitchen-sal
   2. All configuration should apply successfully and all tests should pass. Kitchen should fully clean up after itself.
   3. Check the Linode Manager to verify that there are no test instances still running.
 
-## CI Automation
+## CI Automation Concepts
 The exact steps for automating CI steps depends on your specific tooling but the concepts for triggering automation are the same. You can utilize APIs to trigger events in other systems. Very simply, the steps are:
 
   1. On code commit or PR opening in Github, a webhook is sent to Jenkins
