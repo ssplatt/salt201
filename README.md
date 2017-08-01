@@ -76,7 +76,7 @@ Test-kitchen is a piece of software that is designed specifically for developing
 ## Getting Started with Kitchen
 
 ### Initializing the test environment
-Setting up the test environment is quite painless but does require a couple steps.
+Setting up the test environment is quite painless but does require a couple steps. Although I have provided the `examples-formula` directory as a part of this repository, you will get the most out of this class if you follow along with the examples provided and create it all from scratch.
 
   1. Create a new folder for the formula, i.e. `example-formula`, and enter the directory
 
