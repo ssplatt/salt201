@@ -156,10 +156,10 @@ The `.kitchen.yml` file is where the test environments are defined.
       - Pillar Top File
   - **platforms**
     - which Operating Systems or Distributions to use
-    - can define `driver` and `platform` settings locally for each platform
+    - can define `driver` and `provisioner` settings locally for each platform
   - **suites**
     - the names of the different Salt configurations to test
-    - can define `driver` and `platform` settings locally for each suite
+    - can define `driver` and `provisioner` settings locally for each suite
       - custom pillar files
       - can `exclude` certain platforms
         - legacy OS testing
